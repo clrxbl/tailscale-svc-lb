@@ -3,6 +3,8 @@
 [klipper-lb](https://github.com/k3s-io/klipper-lb) but Tailscale.
 Basically does what https://github.com/tailscale/tailscale/tree/main/docs/k8s does but as a Kubernetes load balancer controller to automatically provision Tailscale IPs for internal Kubernetes LoadBalancer services.
 
+![image](https://user-images.githubusercontent.com/28601081/172466476-3aaf13b4-d5c4-4783-b7ff-43adb6838d69.png)
+
 
 **On new LoadBalancer service:**
 1. Look for LoadBalancer services with our loadbalancerclass
