@@ -1,0 +1,14 @@
+[tool.poetry]
+name = "tailscale-svc-lb"
+version = "0.0.1"
+description = "Tailscale service load balancer Kubernetes"
+authors = ["Michael H. <michael@iptables.sh>"]
+
+[tool.poetry.dependencies]
+python = "^3.9"
+kopf = "^1.35.4"
+kubernetes = "^23.6.0"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
