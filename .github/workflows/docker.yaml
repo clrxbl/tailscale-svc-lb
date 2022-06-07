@@ -31,6 +31,6 @@ jobs:
         with:
           push: true
           tags: clrxbl/tailscale-svc-lb-runtime:latest
-          context: runtime
+          context: "{{defaultContext}}:runtime"
           cache-from: type=gha
           cache-to: type=gha,mode=max
