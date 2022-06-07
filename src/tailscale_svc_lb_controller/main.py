@@ -11,7 +11,7 @@ LOAD_BALANCER_CLASS = OPERATOR_PREFIX + "/lb"
 NODE_SELECTOR_LABEL = OPERATOR_PREFIX + "/deploy"
 SERVICE_NAME_LABEL = OPERATOR_PREFIX + "/svc-name"
 RESOURCE_PREFIX = "ts-"
-TAILSCALE_PROXY_IMAGE = "127.0.0.1:5000/clrxbl/tailscale-proxy:latest"
+TAILSCALE_RUNTIME_IMAGE = "127.0.0.1:5000/clrxbl/tailscale-proxy:latest"
 LEADER_ELECTOR_IMAGE = "gcr.io/google_containers/leader-elector:0.4"
 
 def get_common_labels(service):
@@ -161,8 +161,8 @@ def create_svc_lb(spec, name, logger, **kwargs):
                         ),
                         containers=[
                             kubernetes.client.V1Container(
-                                name="tailscale-proxy",
-                                image=TAILSCALE_PROXY_IMAGE,
+                                name="tailscale-svc-lb-runtime",
+                                image=TAILSCALE_RUNTIME_IMAGE,
                                 image_pull_policy="Always", # TODO: Return to IfNotPresent
                                 env=[
                                     kubernetes.client.V1EnvVar(

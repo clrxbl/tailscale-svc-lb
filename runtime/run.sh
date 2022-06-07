@@ -1,5 +1,6 @@
 #!/bin/bash
 
+# Original: https://github.com/tailscale/tailscale/blob/3b55bf93062cc513a38a3dace3f49f48d3654202/docs/k8s/run.sh
 # Copyright (c) 2022 Tailscale Inc & AUTHORS All rights reserved.
 # Use of this source code is governed by a BSD-style
 # license that can be found in the LICENSE file.
