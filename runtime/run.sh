@@ -17,15 +17,7 @@ set -e
 
 mkdir -p /var/lib/tailscale || true
 
-TAILSCALED_ARGS="--socket=/var/lib/tailscale/tailscaled.sock"
-
-if [[ ! -z "${KUBERNETES_SERVICE_HOST}" ]]; then
-  TAILSCALED_ARGS="${TAILSCALED_ARGS} --state=kube:${TS_KUBE_SECRET}"
-elif [[ ! -z "${TS_STATE_DIR}" ]]; then
-  TAILSCALED_ARGS="${TAILSCALED_ARGS} --statedir=${TS_STATE_DIR}"
-else
-  TAILSCALED_ARGS="${TAILSCALED_ARGS} --state=mem:"
-fi
+TAILSCALED_ARGS="--state=kube:${TS_KUBE_SECRET} --socket=/var/lib/tailscale/tailscaled.sock"
 
 if [ $(cat /proc/sys/net/ipv4/ip_forward) != 1 ]; then
   echo "IPv4 forwarding (/proc/sys/net/ipv4/ip_forward) needs to be enabled, exiting..."

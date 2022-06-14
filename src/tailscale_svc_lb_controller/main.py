@@ -155,14 +155,6 @@ def create_svc_lb(spec, name, logger, **kwargs):
                         service_account=RESOURCE_PREFIX + name,
                         service_account_name=RESOURCE_PREFIX + name,
                         node_selector={NODE_SELECTOR_LABEL: "true"},
-                        # It needs NET_ADMIN capabilities because we can't forward packets using userspace networking
-                        security_context=kubernetes.client.V1SecurityContext(
-                            capabilities=kubernetes.client.V1Capabilities(
-                                add=[
-                                    "NET_ADMIN"
-                                ]
-                            )
-                        ),
                         containers=[
                             kubernetes.client.V1Container(
                                 name="tailscale-svc-lb-runtime",
@@ -192,6 +184,14 @@ def create_svc_lb(spec, name, logger, **kwargs):
                                         _exec=kubernetes.client.V1ExecAction(
                                             command=["/stop.sh"]
                                         )
+                                    )
+                                ),
+                                security_context=kubernetes.client.V1SecurityContext(
+                                    privileged=True,
+                                    capabilities=kubernetes.client.V1Capabilities(
+                                        add=[
+                                            "NET_ADMIN"
+                                        ]
                                     )
                                 )
                             ),
