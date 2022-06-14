@@ -134,6 +134,17 @@ def create_svc_lb(spec, name, logger, **kwargs):
     )
     k8s.create_namespaced_role_binding(namespace, role_binding)
 
+    # Create Secret
+    secret = kubernetes.client.V1Secret(
+        metadata=kubernetes.client.V1ObjectMeta(
+            name=RESOURCE_PREFIX + name,
+            labels=common_labels,
+        ),
+        type="Opaque",
+        string_data={}
+    )
+    k8s.create_namespaced_secret(namespace, secret)
+
     # Create the DaemonSet
     k8s = kubernetes.client.AppsV1Api()
     k8s.create_namespaced_daemon_set(
