@@ -46,7 +46,7 @@ if [[ ! -z "${TS_EXTRA_ARGS}" ]]; then
 fi
 
 echo "Running tailscale up"
-tailscale --socket=/tmp/tailscaled.sock up "${UP_ARGS}"
+tailscale --socket=/tmp/tailscaled.sock up ${UP_ARGS}
 
 TS_IP=$(tailscale --socket=/tmp/tailscaled.sock ip -4)
 TS_IP_B64=$(echo -n "${TS_IP}" | base64 -w 0)
