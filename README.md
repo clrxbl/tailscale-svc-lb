@@ -3,8 +3,20 @@
 [klipper-lb](https://github.com/k3s-io/klipper-lb) but Tailscale.
 Basically does what [Tailscale's k8s examples](https://github.com/tailscale/tailscale/tree/main/docs/k8s) do but as a Kubernetes load balancer controller to automatically provision Tailscale IPs for internal Kubernetes LoadBalancer services.
 
-![image](https://user-images.githubusercontent.com/28601081/172466476-3aaf13b4-d5c4-4783-b7ff-43adb6838d69.png)
+[![asciicast](https://asciinema.org/a/smlS1PDekgvJBDuClsz9huMJy.svg)](https://asciinema.org/a/smlS1PDekgvJBDuClsz9huMJy)
 
+## Installation
+
+There's a Helm chart in the chart directory. There's no public Helm repository available (yet).
+It deploys the controller & any svc-lb pods in the namespace where it's installed.
+
+Once the controller is deployed, create a LoadBalancer service with the loadBalancerClass set to "svc-lb.tailscale.iptables.sh/lb".
+
+There should be a DaemonSet created in the controller's namespace for the newly-created LoadBalancer service. View the logs of the leader-elected pod and click the login.tailscale.com link to authenticate. You only have to do this once per service.
+
+This can be automated by creating a secret in the controller's namespace called `tailscale-svc-lb` with the key `ts-auth-key` and the value being your Tailscale's registration token.
+
+## How it works
 
 **On new LoadBalancer service:**
 1. Look for LoadBalancer services with our loadbalancerclass

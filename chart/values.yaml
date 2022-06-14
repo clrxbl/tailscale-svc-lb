@@ -10,7 +10,7 @@ controller:
     repository: clrxbl/tailscale-svc-lb-controller
     pullPolicy: IfNotPresent
     # Overrides the image tag whose default is the chart appVersion.
-    tag: ""
+    tag: "latest"
 
   imagePullSecrets: []
 
@@ -59,7 +59,7 @@ runtime:
     repository: clrxbl/tailscale-svc-lb-runtime
     pullPolicy: IfNotPresent
     # Overrides the image tag whose default is the chart appVersion.
-    tag: ""
+    tag: "latest"
 
 leaderElector:
   image:
