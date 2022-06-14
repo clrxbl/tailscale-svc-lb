@@ -175,6 +175,7 @@ def create_svc_lb(spec, name, logger, **kwargs):
                                             secret_key_ref=kubernetes.client.V1SecretKeySelector(
                                                 name=SECRET_NAME,
                                                 key="ts-auth-key",
+                                                optional=True,
                                             )
                                         )
                                     )

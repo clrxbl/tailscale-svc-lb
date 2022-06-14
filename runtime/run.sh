@@ -34,7 +34,7 @@ while [[ "${LEADER}" == "false" ]]; do
 done
 
 echo "Starting tailscaled"
-tailscaled "${TAILSCALED_ARGS}" &
+tailscaled ${TAILSCALED_ARGS} &
 PID=$!
 
 UP_ARGS="--accept-dns=${TS_ACCEPT_DNS}"
