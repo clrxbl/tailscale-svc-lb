@@ -58,6 +58,7 @@ SVC_IP=$(getent hosts ${SVC_NAME}.${KUBERNETES_NAMESPACE}.svc | cut -d" " -f1)
 
 echo "Adding iptables rule for DNAT"
 iptables -t nat -I PREROUTING -d "${TS_IP}" -j DNAT --to-destination "${SVC_IP}"
+iptables -t nat -A POSTROUTING -j MASQUERADE
 
 echo "Updating secret with Tailscale IP"
 # patch secret with the tailscale ipv4 address
