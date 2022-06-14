@@ -3,7 +3,9 @@ import kopf
 import logging
 import kubernetes
 import base64
+import os
 
+# Constants
 OPERATOR_PREFIX = "svc-lb.tailscale.iptables.sh"
 OPERATOR_NAMESPACE = "default"
 SECRET_NAME = "tailscale-svc-lb"
@@ -11,8 +13,10 @@ LOAD_BALANCER_CLASS = OPERATOR_PREFIX + "/lb"
 NODE_SELECTOR_LABEL = OPERATOR_PREFIX + "/deploy"
 SERVICE_NAME_LABEL = OPERATOR_PREFIX + "/svc-name"
 RESOURCE_PREFIX = "ts-"
-TAILSCALE_RUNTIME_IMAGE = "127.0.0.1:5000/clrxbl/tailscale-proxy:latest"
-LEADER_ELECTOR_IMAGE = "gcr.io/google_containers/leader-elector:0.4"
+
+TAILSCALE_RUNTIME_IMAGE = os.getenv("TAILSCALE_RUNTIME_IMAGE")
+LEADER_ELECTOR_IMAGE = os.getenv("LEADER_ELECTOR_IMAGE")
+
 
 def get_common_labels(service):
     """

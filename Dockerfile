@@ -24,4 +24,4 @@ RUN apk add --no-cache --virtual .build_deps gcc g++ && \
       poetry install --no-dev && \
       apk del .build_deps
 
-CMD ["kopf", "run", "/app/src/tailscale_svc_lb_controller/main.py"]
+CMD ["kopf", "run", "--liveness=http://0.0.0.0:8080/health", "/app/src/tailscale_svc_lb_controller/main.py"]
