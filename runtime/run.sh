@@ -15,9 +15,7 @@ TS_KUBE_SECRET="${TS_KUBE_SECRET:-tailscale}"
 
 set -e
 
-mkdir -p /var/lib/tailscale || true
-
-TAILSCALED_ARGS="--state=kube:${TS_KUBE_SECRET} --socket=/var/lib/tailscale/tailscaled.sock"
+TAILSCALED_ARGS="--state=kube:${TS_KUBE_SECRET} --socket=/tmp/tailscaled.sock"
 
 if [ $(cat /proc/sys/net/ipv4/ip_forward) != 1 ]; then
   echo "IPv4 forwarding (/proc/sys/net/ipv4/ip_forward) needs to be enabled, exiting..."
@@ -48,9 +46,9 @@ if [[ ! -z "${TS_EXTRA_ARGS}" ]]; then
 fi
 
 echo "Running tailscale up"
-tailscale --socket=/var/lib/tailscale/tailscaled.sock up "${UP_ARGS}"
+tailscale --socket=/tmp/tailscaled.sock up "${UP_ARGS}"
 
-TS_IP=$(tailscale --socket=/var/lib/tailscale/tailscaled.sock ip -4)
+TS_IP=$(tailscale --socket=/tmp/tailscaled.sock ip -4)
 TS_IP_B64=$(echo -n "${TS_IP}" | base64 -w 0)
 
 # Technically can get the service ClusterIP through the <svc-name>_SERVICE_HOST variable
