@@ -6,6 +6,8 @@ metadata:
     {{- include "tailscale-svc-lb.labels" . | nindent 4 }}
 spec:
   replicas: 1
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       {{- include "tailscale-svc-lb.selectorLabels" . | nindent 6 }}

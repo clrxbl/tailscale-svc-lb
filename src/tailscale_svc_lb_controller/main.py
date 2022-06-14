@@ -156,7 +156,7 @@ def create_svc_lb(spec, name, logger, **kwargs):
                         service_account_name=RESOURCE_PREFIX + name,
                         node_selector={NODE_SELECTOR_LABEL: "true"},
                         # It needs NET_ADMIN capabilities because we can't forward packets using userspace networking
-                        security_context=kubernetes.client.V1PodSecurityContext(
+                        security_context=kubernetes.client.V1SecurityContext(
                             capabilities=kubernetes.client.V1Capabilities(
                                 add=[
                                     "NET_ADMIN"
