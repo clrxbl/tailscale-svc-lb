@@ -135,10 +135,12 @@ def create_svc_lb(spec, name, logger, **kwargs):
     k8s.create_namespaced_role_binding(namespace, role_binding)
 
     # Create Secret
+    k8s = kubernetes.client.CoreV1Api()
     secret = kubernetes.client.V1Secret(
         metadata=kubernetes.client.V1ObjectMeta(
             name=RESOURCE_PREFIX + name,
             labels=common_labels,
+            namespace=namespace,
         ),
         type="Opaque",
         string_data={}
