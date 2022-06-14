@@ -230,7 +230,7 @@ def create_svc_lb(spec, name, logger, **kwargs):
     )
 
 
-@kopf.on.update("secrets", field="data.ts-ip")
+@kopf.on.field("secrets", field="data.ts-ip")
 def update_svc(body, namespace, **kwargs):
     """
     Update the LoadBalancer service status with the Tailscale IP.
