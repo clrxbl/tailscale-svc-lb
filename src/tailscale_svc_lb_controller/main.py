@@ -52,7 +52,7 @@ def update_service_status(namespace, service, ip):
 
 
 @kopf.on.startup()
-def configure(settings: kopf.CONTROLLERSettings, **_):
+def configure(settings: kopf.OperatorSettings, **_):
     settings.persistence.diffbase_storage = kopf.AnnotationsDiffBaseStorage(
         prefix=CONTROLLER_PREFIX,
         key="last-handled-configuration",
