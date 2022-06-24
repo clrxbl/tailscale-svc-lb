@@ -65,4 +65,4 @@ leaderElector:
   image:
     repository: gcr.io/google_containers/leader-elector
     pullPolicy: IfNotPresent
-    tag: "0.4"
+    tag: "0.5"

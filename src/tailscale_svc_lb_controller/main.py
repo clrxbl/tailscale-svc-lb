@@ -213,7 +213,7 @@ def create_svc_lb(spec, name, logger, **kwargs):
                                 name="leader-elector",
                                 image=LEADER_ELECTOR_IMAGE,
                                 image_pull_policy="IfNotPresent",
-                                args=[f"--election={RESOURCE_PREFIX}{name}", "--http=0.0.0.0:4040"],
+                                args=[f"--election={RESOURCE_PREFIX}{name}", "--election-namespace={namespace}", "--http=0.0.0.0:4040"],
                                 lifecycle=kubernetes.client.V1Lifecycle(
                                     pre_stop=kubernetes.client.V1LifecycleHandler(
                                         _exec=kubernetes.client.V1ExecAction(
