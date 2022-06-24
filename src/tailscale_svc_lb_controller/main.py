@@ -6,12 +6,12 @@ import base64
 import os
 
 # Constants
-OPERATOR_PREFIX = "svc-lb.tailscale.iptables.sh"
-OPERATOR_NAMESPACE = "default"
+CONTROLLER_PREFIX = "svc-lb.tailscale.iptables.sh"
+CONTROLLER_NAMESPACE = os.getenv("CONTROLLER_NAMESPACE")
 SECRET_NAME = "tailscale-svc-lb"
-LOAD_BALANCER_CLASS = OPERATOR_PREFIX + "/lb"
-NODE_SELECTOR_LABEL = OPERATOR_PREFIX + "/deploy"
-SERVICE_NAME_LABEL = OPERATOR_PREFIX + "/svc-name"
+LOAD_BALANCER_CLASS = CONTROLLER_PREFIX + "/lb"
+NODE_SELECTOR_LABEL = CONTROLLER_PREFIX + "/deploy"
+SERVICE_NAME_LABEL = CONTROLLER_PREFIX + "/svc-name"
 RESOURCE_PREFIX = "ts-"
 
 TAILSCALE_RUNTIME_IMAGE = os.getenv("TAILSCALE_RUNTIME_IMAGE")
@@ -52,13 +52,13 @@ def update_service_status(namespace, service, ip):
 
 
 @kopf.on.startup()
-def configure(settings: kopf.OperatorSettings, **_):
+def configure(settings: kopf.CONTROLLERSettings, **_):
     settings.persistence.diffbase_storage = kopf.AnnotationsDiffBaseStorage(
-        prefix=OPERATOR_PREFIX,
+        prefix=CONTROLLER_PREFIX,
         key="last-handled-configuration",
     )
-    settings.persistence.finalizer = OPERATOR_PREFIX + "/finalizer"
-    settings.persistence.progress_storage = kopf.AnnotationsProgressStorage(prefix=OPERATOR_PREFIX)
+    settings.persistence.finalizer = CONTROLLER_PREFIX + "/finalizer"
+    settings.persistence.progress_storage = kopf.AnnotationsProgressStorage(prefix=CONTROLLER_PREFIX)
 
 
 @kopf.on.create("services", field="spec.loadBalancerClass", value=LOAD_BALANCER_CLASS)
@@ -67,7 +67,7 @@ def create_svc_lb(spec, name, logger, **kwargs):
     Create a service load balancer instance.
     """
 
-    namespace = OPERATOR_NAMESPACE
+    namespace = CONTROLLER_NAMESPACE
     logging.info(f"Creating svc-lb resources in namespace {namespace} for service {name}")
 
     common_labels = get_common_labels(name)
@@ -253,7 +253,7 @@ def delete_svc_lb(spec, name, logger, **kwargs):
     Delete all created service load balancer resources.
     """
 
-    namespace = OPERATOR_NAMESPACE
+    namespace = CONTROLLER_NAMESPACE
     logging.info(f"Deleting svc-lb resources in namespace {namespace} for service {name}")
 
     k8s = kubernetes.client.AppsV1Api()

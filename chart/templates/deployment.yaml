@@ -45,6 +45,8 @@ spec:
               path: /health
               port: 8080
           env:
+            - name: CONTROLLER_NAMESPACE
+              value: "{{ .Release.Namespace }}"
             - name: TAILSCALE_RUNTIME_IMAGE
               value: "{{ .Values.runtime.image.repository }}:{{ .Values.runtime.image.tag | default .Chart.AppVersion }}"
             - name: LEADER_ELECTOR_IMAGE
