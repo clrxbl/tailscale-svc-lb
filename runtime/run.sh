@@ -62,11 +62,10 @@ TS_IP_B64=$(echo -n "${TS_IP}" | base64 -w 0)
 
 # Technically can get the service ClusterIP through the <svc-name>_SERVICE_HOST variable
 # but no idea how to do that in a sane way in pure Bash, so let's just get it from kube-dns
-KUBERNETES_NAMESPACE=$(cat /var/run/secrets/kubernetes.io/serviceaccount/namespace)
 echo "Trying to get the service ClusterIP..."
 SVC_IP_RETRIEVED=false
 while [[ "${SVC_IP_RETRIEVED}" == "false" ]]; do
-  SVC_IP=$(getent hosts ${SVC_NAME}.${KUBERNETES_NAMESPACE}.svc | cut -d" " -f1)
+  SVC_IP=$(getent hosts ${SVC_NAME}.${SVC_NAMESPACE}.svc | cut -d" " -f1)
   if [[ ! -z "${SVC_IP}" ]]; then
     SVC_IP_RETRIEVED=true
   else
