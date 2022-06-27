@@ -12,13 +12,14 @@ SECRET_NAME = "tailscale-svc-lb"
 LOAD_BALANCER_CLASS = CONTROLLER_PREFIX + "/lb"
 NODE_SELECTOR_LABEL = CONTROLLER_PREFIX + "/deploy"
 SERVICE_NAME_LABEL = CONTROLLER_PREFIX + "/svc-name"
+SERVICE_NAMESPACE_LABEL = CONTROLLER_PREFIX + "/svc-namespace"
 RESOURCE_PREFIX = "ts-"
 
 TAILSCALE_RUNTIME_IMAGE = os.getenv("TAILSCALE_RUNTIME_IMAGE")
 LEADER_ELECTOR_IMAGE = os.getenv("LEADER_ELECTOR_IMAGE")
 
 
-def get_common_labels(service):
+def get_common_labels(service, namespace):
     """
     Get the labels common to all Tailscale services.
     """
@@ -26,7 +27,8 @@ def get_common_labels(service):
     return {
         "app.kubernetes.io/name": "tailscale-svc-lb",
         "app.kubernetes.io/managed-by": "tailscale-svc-lb-controller",
-        SERVICE_NAME_LABEL: service
+        SERVICE_NAME_LABEL: service,
+        SERVICE_NAMESPACE_LABEL: namespace
     }
 
 
@@ -62,15 +64,16 @@ def configure(settings: kopf.OperatorSettings, **_):
 
 
 @kopf.on.create("services", field="spec.loadBalancerClass", value=LOAD_BALANCER_CLASS)
-def create_svc_lb(spec, name, logger, **kwargs):
+def create_svc_lb(spec, body, name, logger, **kwargs):
     """
     Create a service load balancer instance.
     """
 
     namespace = CONTROLLER_NAMESPACE
-    logging.info(f"Creating svc-lb resources in namespace {namespace} for service {name}")
+    service_namespace = body["metadata"]["namespace"]
+    logging.info(f"Creating svc-lb resources in namespace {namespace} for service {service_namespace}/{name}")
 
-    common_labels = get_common_labels(name)
+    common_labels = get_common_labels(name, service_namespace)
 
     # Create ServiceAccount
     k8s = kubernetes.client.CoreV1Api()
@@ -181,7 +184,7 @@ def create_svc_lb(spec, name, logger, **kwargs):
                                         name="SVC_NAME", value=name
                                     ),
                                     kubernetes.client.V1EnvVar(
-                                        name="SVC_NAMESPACE", value=namespace
+                                        name="SVC_NAMESPACE", value=service_namespace
                                     ),
                                     kubernetes.client.V1EnvVar(
                                         name="TS_AUTH_KEY", value_from=kubernetes.client.V1EnvVarSource(
@@ -238,13 +241,14 @@ def update_svc(body, namespace, **kwargs):
 
     # Get service name from svc-lb label
     service = body["metadata"]["labels"][SERVICE_NAME_LABEL]
+    service_namespace = body["metadata"]["labels"][SERVICE_NAMESPACE_LABEL]
 
     # Get Tailscale IP from the service's secret
     ip = base64.b64decode(body["data"]["ts-ip"]).decode("utf-8")
 
-    logging.info(f"Updating LoadBalancer service in namespace {namespace} with Tailscale IP {ip}")
+    logging.info(f"Updating LoadBalancer service in namespace {service_namespace} with Tailscale IP {ip}")
 
-    update_service_status(namespace, service, ip)
+    update_service_status(service_namespace, service, ip)
 
 
 @kopf.on.delete("services", field="spec.loadBalancerClass", value=LOAD_BALANCER_CLASS)

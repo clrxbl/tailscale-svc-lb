@@ -62,6 +62,7 @@ TS_IP_B64=$(echo -n "${TS_IP}" | base64 -w 0)
 
 # Technically can get the service ClusterIP through the <svc-name>_SERVICE_HOST variable
 # but no idea how to do that in a sane way in pure Bash, so let's just get it from kube-dns
+PROXY_NAMESPACE=$(cat /var/run/secrets/kubernetes.io/serviceaccount/namespace)
 echo "Trying to get the service ClusterIP..."
 SVC_IP_RETRIEVED=false
 while [[ "${SVC_IP_RETRIEVED}" == "false" ]]; do
@@ -79,6 +80,6 @@ iptables -t nat -A POSTROUTING -j MASQUERADE
 
 echo "Updating secret with Tailscale IP"
 # patch secret with the tailscale ipv4 address
-kubectl patch secret "${TS_KUBE_SECRET}" --namespace "${KUBERNETES_NAMESPACE}" --type=json --patch="[{\"op\":\"replace\",\"path\":\"/data/ts-ip\",\"value\":\"${TS_IP_B64}\"}]"
+kubectl patch secret "${TS_KUBE_SECRET}" --namespace "${PROXY_NAMESPACE}" --type=json --patch="[{\"op\":\"replace\",\"path\":\"/data/ts-ip\",\"value\":\"${TS_IP_B64}\"}]"
 
 wait ${PID}
