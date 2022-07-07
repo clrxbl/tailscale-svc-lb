@@ -5,6 +5,9 @@
 nameOverride: ""
 fullnameOverride: ""
 
+# (Optional) Auth Key to use when starting tailscale. Automates the login process.
+tailscaleAuthKey: ""
+
 controller:
   image:
     repository: clrxbl/tailscale-svc-lb-controller
