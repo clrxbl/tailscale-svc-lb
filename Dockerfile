@@ -14,14 +14,15 @@ RUN apk add --no-cache --virtual .python_deps build-base python3-dev libffi-dev 
     mkdir -p /app/src /app && \
     poetry config virtualenvs.create false
 
-ADD src /app/src
 ADD pyproject.toml /app/pyproject.toml
+RUN apk add --no-cache --virtual .build_deps gcc g++ && \
+      cd /app && \
+      poetry install --no-dev && \
+      apk del .build_deps
+
+ADD src /app/src
 
 WORKDIR /app
 ENV PYTHONPATH=${PYTHONPATH}:/app
-
-RUN apk add --no-cache --virtual .build_deps gcc g++ && \
-      poetry install --no-dev && \
-      apk del .build_deps
 
 CMD ["kopf", "run", "--all-namespaces", "--liveness=http://0.0.0.0:8080/health", "/app/src/tailscale_svc_lb_controller/main.py"]
