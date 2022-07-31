@@ -27,16 +27,6 @@ spec:
       serviceAccountName: {{ include "tailscale-svc-lb.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.controller.podSecurityContext | nindent 8 }}
-      initContainers:
-        - name: {{ .Chart.Name }}-sysctl
-          securityContext:
-            {{- toYaml .Values.controller.securityContext | nindent 12 }}
-          image: "{{ .Values.controller.image.repository }}:{{ .Values.controller.image.tag | default .Chart.AppVersion }}"
-          imagePullPolicy: {{ .Values.controller.image.pullPolicy }}
-          command:
-            - sh
-            - -c
-            - sysctl -w net.ipv4.ip_forward=1
       containers:
         - name: {{ .Chart.Name }}
           securityContext:
