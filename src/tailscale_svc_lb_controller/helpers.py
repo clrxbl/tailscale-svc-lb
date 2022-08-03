@@ -23,21 +23,17 @@ def update_service_status(namespace, service, ip):
     Update the status of the service to reflect the service Tailscale IP.
     """
 
-    try:
-        # Get the service
-        k8s = kubernetes.client.CoreV1Api()
-        service_object = k8s.read_namespaced_service(name=service, namespace=namespace)
+    # Get the service
+    k8s = kubernetes.client.CoreV1Api()
+    service_object = k8s.read_namespaced_service(name=service, namespace=namespace)
 
-        # Update the status
-        service_object.status.load_balancer.ingress = [
-            kubernetes.client.V1LoadBalancerIngress(ip=ip)
-        ]
+    # Update the status
+    service_object.status.load_balancer.ingress = [
+        kubernetes.client.V1LoadBalancerIngress(ip=ip)
+    ]
 
-        # Patch the service with the new status
-        k8s.patch_namespaced_service_status(name=service, namespace=namespace, body=service_object)
-    except Exception as e:
-        raise e
-
+    # Patch the service with the new status
+    k8s.patch_namespaced_service_status(name=service, namespace=namespace, body=service_object)
 
 def get_hostname(target_service_name: str, target_service_namespace: str) -> str:
     """
@@ -61,16 +57,21 @@ def get_hostname(target_service_name: str, target_service_namespace: str) -> str
     return ""
 
 
-def get_image_pull_secrets() -> [str]:
+def get_image_pull_secrets() -> [kubernetes.client.V1LocalObjectReference]:
     """
     Generates the imagePullSecrets to use, based on the semi-colon seperated string
     config.IMAGE_PULL_SECRETS.
     """
-    if config.IMAGE_PULL_SECRETS is not None:
-        logging.debug(f"Image Pull Secrets: {config.IMAGE_PULL_SECRETS}")
-        retval = []
-        secrets = config.IMAGE_PULL_SECRETS.split(";")
-        for secret in secrets:
-            retval.append(kubernetes.client.V1LocalObjectReference(name=secret))
-        return retval
-    return []
+    if not config.IMAGE_PULL_SECRETS:
+        return []
+    logging.debug(f"Image Pull Secrets: {config.IMAGE_PULL_SECRETS}")
+    secrets = config.IMAGE_PULL_SECRETS.split(";")
+    return [kubernetes.client.V1LocalObjectReference(name=secret) for secret in secrets]
+
+@contextlib.contextmanager
+def ignore_k8s_statuses(*ignored_statuses):
+    try:
+        yield
+    except kubernetes.client.exceptions.ApiException as e:
+        if e.status not in ignored_statuses:
+            raise e

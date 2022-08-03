@@ -20,7 +20,7 @@ NODE_SELECTOR_LABEL = env.get("TS_PROXY_NODE_SELECTOR_LABEL", None)
 # A semi-colon seperated string containing the names of any secrets that should be used
 # when pulling images. Secret must already exist and be present in the TS_PROXY_NAMESPACE
 IMAGE_PULL_SECRETS = env.get("IMAGE_PULL_SECRETS", "")
-if not re.match(r"^([a-z]|-|\d|;)*$", IMAGE_PULL_SECRETS):
+if not re.match(r"^[a-z\d;-]*$", IMAGE_PULL_SECRETS):
     logging.error("IMAGE_PULL_SECRETS invalid. Should be a semi-colon seperated list of"
                   "secret names.")
     sys.exit(1)
@@ -37,8 +37,12 @@ TS_PROXY_NAMESPACE = env.get("TS_PROXY_NAMESPACE", "default")
 # If TS_PROXY_DEPLOYMENT_TYPE is 'Deployment', this dictates the number of replicas. No effect otherwise.
 try:
     TS_PROXY_REPLICA_COUNT = int(env.get("TS_PROXY_REPLICA_COUNT", "2"))
-except Exception:
-    logging.error("TS_PROXY_REPLICA_COUNT value invalid. Should be an integer above 0.")
+except ValueError:
+    logging.error("TS_PROXY_REPLICA_COUNT value invalid. Expected integer.")
+    sys.exit(1)
+
+if TS_PROXY_REPLICA_COUNT <= 0:
+    logging.error(f"TS_PROXY_REPLICA_COUNT value invalid. Needs to be an integer greater than 0. Received ${TS_PROXY_REPLICA_COUNT}")
     sys.exit(1)
 
 # Tailscale Proxy Runtime Container Image

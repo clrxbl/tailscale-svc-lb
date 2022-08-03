@@ -22,40 +22,33 @@ class TailscaleProxyResource:
             target_service_namespace: Namespace of the target Service this Proxy Instance should direct traffic to
             tailscale_proxy_namespace: Namespace that the Tailscale Proxy resources will be created in
         """
-        self.target_service_name = target_service_name
-        self.target_service_namespace = target_service_namespace
-        self.tailscale_proxy_namespace = tailscale_proxy_namespace
-        self.deployment_type = deployment_type
+        self.resources = [
+            ServiceAccount(target_service_name, target_service_namespace, tailscale_proxy_namespace),
+            Role(target_service_name, target_service_namespace, tailscale_proxy_namespace),
+            RoleBinding(target_service_name, target_service_namespace, tailscale_proxy_namespace),
+            Secret(target_service_name, target_service_namespace, tailscale_proxy_namespace),
+            self.__get_deployment_class(deployment_type)(target_service_name, target_service_namespace, tailscale_proxy_namespace),
+        ]
+
+    @staticmethod
+    def __get_deployment_class(deployment_type: str) -> Deployment | DaemonSet:
+        match deployment_type.lower():
+            case "daemonset":
+                return DaemonSet
+            case "deployment":
+                return Deployment
+            case _:
+                raise ValueError(f"Invalid value for {deployment_type=}")
 
     def create(self):
-        ServiceAccount(self.target_service_name, self.target_service_namespace, self.tailscale_proxy_namespace).create()
-        Role(self.target_service_name, self.target_service_namespace, self.tailscale_proxy_namespace).create()
-        RoleBinding(self.target_service_name, self.target_service_namespace, self.tailscale_proxy_namespace).create()
-        Secret(self.target_service_name, self.target_service_namespace, self.tailscale_proxy_namespace).create()
-        if self.deployment_type.lower() == "daemonset":
-            DaemonSet(self.target_service_name, self.target_service_namespace, self.tailscale_proxy_namespace).create()
-        elif self.deployment_type.lower() == "deployment":
-            Deployment(self.target_service_name, self.target_service_namespace, self.tailscale_proxy_namespace).create()
+        for resource in self.resources:
+            resource.create()
 
     def delete(self):
-        if self.deployment_type.lower() == "daemonset":
-            DaemonSet(self.target_service_name, self.target_service_namespace, self.tailscale_proxy_namespace).delete()
-        elif self.deployment_type.lower() == "deployment":
-            Deployment(self.target_service_name, self.target_service_namespace, self.tailscale_proxy_namespace).delete()
-        Secret(self.target_service_name, self.target_service_namespace, self.tailscale_proxy_namespace).delete()
-        RoleBinding(self.target_service_name, self.target_service_namespace, self.tailscale_proxy_namespace).delete()
-        Role(self.target_service_name, self.target_service_namespace, self.tailscale_proxy_namespace).delete()
-        ServiceAccount(self.target_service_name, self.target_service_namespace, self.tailscale_proxy_namespace).delete()
+        # Delete resources in reverse
+        for resource in self.resources[::-1]:
+            resource.delete()
 
     def reconcile(self):
-        ServiceAccount(self.target_service_name, self.target_service_namespace,
-                       self.tailscale_proxy_namespace).reconcile()
-        Role(self.target_service_name, self.target_service_namespace, self.tailscale_proxy_namespace).reconcile()
-        RoleBinding(self.target_service_name, self.target_service_namespace, self.tailscale_proxy_namespace).reconcile()
-        Secret(self.target_service_name, self.target_service_namespace, self.tailscale_proxy_namespace).reconcile()
-        if self.deployment_type.lower() == "daemonset":
-            DaemonSet(self.target_service_name, self.target_service_namespace,
-                      self.tailscale_proxy_namespace).reconcile()
-        elif self.deployment_type.lower() == "deployment":
-            Deployment(self.target_service_name, self.target_service_namespace,
-                       self.tailscale_proxy_namespace).reconcile()
+        for resource in self.resources:
+            resource.reconcile()

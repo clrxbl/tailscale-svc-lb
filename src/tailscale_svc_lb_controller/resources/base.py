@@ -1,3 +1,5 @@
+import abc
+import contextlib
 import kubernetes
 
 from src.tailscale_svc_lb_controller import config
@@ -5,20 +7,35 @@ from src.tailscale_svc_lb_controller import helpers
 
 
 class BaseResource:
-    target_service_name = ""
-    target_service_namespace = ""
-    tailscale_proxy_namespace = ""
 
-    # All resources that inherit this class need to implement the following methods
-    def new(self): raise NotImplementedError
+    def __init__(self, target_service_name: str, target_service_namespace: str, namespace: str):
+        self.target_service_name = target_service_name
+        self.target_service_namespace = target_service_namespace
+        self.tailscale_proxy_namespace = namespace
 
-    def create(self): raise NotImplementedError
+    @abstractmethod
+    def new(self):
+        pass
 
-    def delete(self): raise NotImplementedError
+    @abstractmethod
+    def create(self):
+        pass
 
-    def get(self): raise NotImplementedError
+    @abstractmethod
+    def delete(self):
+        pass
 
-    def reconcile(self): raise NotImplementedError
+    @abstractmethod
+    def get(self):
+        pass
+
+    def reconcile(self):
+        """
+        Creates the resource if it doesn't already exist
+        """
+        existing = self.get()
+        if existing is None:
+            self.create()
 
     def _generate_pod_template_spec(self) -> kubernetes.client.V1PodTemplateSpec:
         node_selector = None
