@@ -12,10 +12,17 @@ TS_DEST_IP="${TS_DEST_IP:-}"
 TS_EXTRA_ARGS="${TS_EXTRA_ARGS:-}"
 TS_ACCEPT_DNS="${TS_ACCEPT_DNS:-false}"
 TS_KUBE_SECRET="${TS_KUBE_SECRET:-tailscale}"
+TS_HOSTNAME="${TS_HOSTNAME:-}"
+TSD_EXTRA_ARGS="${TSD_EXTRA_ARGS:-}"
+
+
+# Set to 'true' to skip leadership election. Only use when testing against one node
+#   This is useful on non x86_64 architectures, as the leader-elector image is only provided for that arch
+DEBUG_SKIP_LEADER="${DEBUG_SKIP_LEADER:-false}"
 
 set -e
 
-TAILSCALED_ARGS="--state=kube:${TS_KUBE_SECRET} --socket=/tmp/tailscaled.sock"
+TAILSCALED_ARGS="--state=kube:${TS_KUBE_SECRET} --socket=/tmp/tailscaled.sock ${TSD_EXTRA_ARGS}"
 
 if [ $(cat /proc/sys/net/ipv4/ip_forward) != 1 ]; then
   echo "IPv4 forwarding (/proc/sys/net/ipv4/ip_forward) needs to be enabled, exiting..."
@@ -30,28 +37,34 @@ if [[ ! -c /dev/net/tun ]]; then
   mknod /dev/net/tun c 10 200
 fi
 
-echo "Waiting for leader election..."
-LEADER=false
-while [[ "${LEADER}" == "false" ]]; do
-  CURRENT_LEADER=$(curl http://127.0.0.1:4040 -s -m 2 | jq -r ".name")
-  if [[ "${CURRENT_LEADER}" == "$(hostname)" ]]; then
-    echo "I am the leader."
-    LEADER=true
-  else
+if [[ "${DEBUG_SKIP_LEADER}" == "true" ]]; then
+  echo "CAUTION: Skipping leader election due to DEBUG_SKIP_LEADER==true."
+else
+  echo "Waiting for leader election..."
+  LEADER=false
+  while :; do
+    CURRENT_LEADER=$(curl http://127.0.0.1:4040 -s -m 2 | jq -r ".name")
+    if [[ "${CURRENT_LEADER}" == "$(hostname)" ]]; then
+      echo "I am the leader."
+      break
     sleep 1
-  fi
-done
+  done
+fi
 
 echo "Starting tailscaled"
 tailscaled ${TAILSCALED_ARGS} &
 PID=$!
 
 UP_ARGS="--accept-dns=${TS_ACCEPT_DNS}"
-if [[ ! -z "${TS_AUTH_KEY}" ]]; then
+if [[ -n "${TS_AUTH_KEY}" ]]; then
   UP_ARGS="--authkey=${TS_AUTH_KEY} ${UP_ARGS}"
 fi
-if [[ ! -z "${TS_EXTRA_ARGS}" ]]; then
+if [[ -n "${TS_EXTRA_ARGS}" ]]; then
   UP_ARGS="${UP_ARGS} ${TS_EXTRA_ARGS:-}"
+fi
+if [[ -n "${TS_HOSTNAME}" ]]; then
+  echo "Overriding system hostname using TS_HOSTNAME: ${TS_HOSTNAME}"
+  UP_ARGS="--hostname=${TS_HOSTNAME} ${UP_ARGS}"
 fi
 
 echo "Running tailscale up"
@@ -67,7 +80,7 @@ echo "Trying to get the service ClusterIP..."
 SVC_IP_RETRIEVED=false
 while [[ "${SVC_IP_RETRIEVED}" == "false" ]]; do
   SVC_IP=$(getent hosts ${SVC_NAME}.${SVC_NAMESPACE}.svc | cut -d" " -f1)
-  if [[ ! -z "${SVC_IP}" ]]; then
+  if [[ -n "${SVC_IP}" ]]; then
     SVC_IP_RETRIEVED=true
   else
     sleep 1

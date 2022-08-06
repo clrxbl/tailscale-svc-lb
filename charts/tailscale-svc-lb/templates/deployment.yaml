@@ -1,0 +1,121 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "tailscale-svc-lb.fullname" . }}
+  labels:
+    {{- include "tailscale-svc-lb.labels" . | nindent 4 }}
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      {{- include "tailscale-svc-lb.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.controller.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "tailscale-svc-lb.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.controller.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "tailscale-svc-lb.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.controller.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.controller.securityContext | nindent 12 }}
+          image: "{{ .Values.controller.image.repository }}:{{ .Values.controller.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.controller.image.pullPolicy }}
+          ports:
+            - containerPort: 8080
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+          env:
+            - name: TS_PROXY_NAMESPACE
+              value: "{{ .Release.Namespace }}"
+            - name: LOAD_BALANCER_CLASS
+              value: "{{ .Values.loadBalancerClass }}"
+            - name: DEPLOYMENT_TYPE
+              value: "{{ .Values.proxy.type }}"
+            - name: TS_HOSTNAME_FROM_SERVICE
+              value: "{{ .Values.proxy.generateHostnameFromServiceName }}"
+            {{- if .Values.proxy.serviceDomainSuffix }}
+            - name: TS_HOSTNAME_FROM_SERVICE_SUFFIX
+              value: "{{ .Values.proxy.serviceDomainSuffix }}"
+            {{- end }}
+            {{- if .Values.proxy.nodeSelectorLabel }}
+            - name: TS_PROXY_NODE_SELECTOR_LABEL
+              value: "{{ .Values.proxy.nodeSelectorLabel }}"
+            {{- end }}
+            - name: IMAGE_PULL_SECRETS
+              value: "{{ join ";" .Values.proxy.runtime.imagePullSecrets }}"
+            - name: TS_PROXY_RUNTIME_IMAGE
+              value: "{{ .Values.proxy.runtime.image.repository }}:{{ .Values.proxy.runtime.image.tag | default .Chart.AppVersion }}"
+            - name: TS_PROXY_REPLICA_COUNT
+              value: "{{ .Values.proxy.deploymentReplicas }}"
+            {{- if ((.Values.proxy.runtime.resources).requests).cpu }}
+            - name: TS_PROXY_RUNTIME_REQUEST_CPU
+              value: "{{ ((.Values.proxy.runtime.resources).requests).cpu }}"
+            {{- end }}
+            {{- if ((.Values.proxy.runtime.resources).requests).memory }}
+            - name: TS_PROXY_RUNTIME_REQUEST_MEM
+              value: "{{ ((.Values.proxy.runtime.resources).requests).memory }}"
+            {{- end }}
+            {{- if ((.Values.proxy.runtime.resources).limits).cpu }}
+            - name: TS_PROXY_RUNTIME_LIMIT_CPU
+              value: "{{ ((.Values.proxy.runtime.resources).limits).cpu }}"
+            {{- end }}
+            {{- if ((.Values.proxy.runtime.resources).limits).memory }}
+            - name: TS_PROXY_RUNTIME_LIMIT_MEM
+              value: "{{ ((.Values.proxy.runtime.resources).limits).memory }}"
+            {{- end }}
+            - name: TS_PROXY_RUNTIME_IMAGE_PULL_POLICY
+              value: "{{ .Values.proxy.runtime.image.pullPolicy }}"
+            - name: LEADER_ELECTOR_IMAGE
+              value: "{{ .Values.proxy.leaderElector.image.repository }}:{{ .Values.proxy.leaderElector.image.tag }}"
+            - name: LEADER_ELECTOR_IMAGE_PULL_POLICY
+              value: "{{ .Values.proxy.leaderElector.image.pullPolicy }}"
+            {{- if ((.Values.proxy.leaderElector.resources).requests).cpu }}
+            - name: LEADER_ELECTOR_REQUEST_CPU
+              value: "{{ ((.Values.proxy.leaderElector.resources).requests).cpu }}"
+            {{- end }}
+            {{- if ((.Values.proxy.leaderElector.resources).requests).memory }}
+            - name: LEADER_ELECTOR_REQUEST_MEM
+              value: "{{ ((.Values.proxy.leaderElector.resources).requests).memory }}"
+            {{- end }}
+            {{- if ((.Values.proxy.leaderElector.resources).limits).memory }}
+            - name: LEADER_ELECTOR_LIMIT_CPU
+              value: "{{ ((.Values.proxy.leaderElector.resources).limits).cpu }}"
+            {{- end }}
+            {{- if ((.Values.proxy.leaderElector.resources).limits).memory }}
+            - name: LEADER_ELECTOR_LIMIT_MEM
+              value: "{{ ((.Values.proxy.leaderElector.resources).limits).memory }}"
+            {{- end }}
+          resources:
+            {{- toYaml .Values.controller.resources | nindent 12 }}
+      {{- with .Values.controller.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.controller.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.controller.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

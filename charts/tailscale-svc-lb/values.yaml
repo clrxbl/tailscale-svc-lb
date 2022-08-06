@@ -1,0 +1,131 @@
+# Default values for tailscale-svc-lb.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+nameOverride: ""
+fullnameOverride: ""
+
+# Prefix to apply to the target service name when creating Tailscale Proxy resources
+# WARNING: Changing this after deploying the controller will result in orphaned resources.
+resourcePrefix: "ts-"
+
+# LoadBalancerClass this instance of the controller should monitor
+# WARNING: Changing this after deploying the controller will result in orphaned resources.
+loadBalancerClass: "svc-lb.tailscale.iptables.sh/lb"
+
+# (Optional) Auth Key to use when starting tailscale. Automates the login process.
+tailscaleAuthKey: ""
+
+controller:
+  image:
+    repository: clrxbl/tailscale-svc-lb-controller
+    pullPolicy: IfNotPresent
+    # Overrides the image tag whose default is the chart appVersion.
+    tag: "latest"
+
+  imagePullSecrets: []
+
+  serviceAccount:
+    # Specifies whether a service account should be created
+    create: true
+    # Annotations to add to the service account
+    annotations: {}
+    # The name of the service account to use.
+    # If not set and create is true, a name is generated using the fullname template
+    name: ""
+
+  podAnnotations: {}
+
+  podSecurityContext: {}
+    # fsGroup: 2000
+
+  securityContext: {}
+    # capabilities:
+    #   drop:
+    #   - ALL
+    # readOnlyRootFilesystem: true
+    # runAsNonRoot: true
+    # runAsUser: 1000
+
+  resources: {}
+    # We usually recommend not to specify default resources and to leave this as a conscious
+    # choice for the user. This also increases chances charts run on environments with little
+    # resources, such as Minikube. If you do want to specify resources, uncomment the following
+    # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+    # limits:
+    #   cpu: 100m
+    #   memory: 128Mi
+    # requests:
+    #   cpu: 100m
+    #   memory: 128Mi
+
+  nodeSelector: {}
+
+  tolerations: []
+
+  affinity: {}
+
+# Configure the behaviour of the deployed Tailscale Proxy resources
+proxy:
+
+  # How to deploy the Tailscale Proxy instances - valid options are 'DaemonSet', 'Deployment'
+  type: Deployment
+  # The number of Tailscale Proxy Replicas to run for each instance. Only applies if proxy.type is set to 'Deployment'
+  deploymentReplicas: 2
+
+  # NodeLabel to use when creating Tailscale Proxy deployment. The value of this label should be "true"
+  #  Example: "svc-lb.tailscale.iptables.sh/deploy" will use nodeLabelSelector svc-lb.tailscale.iptables.sh/deploy=true
+  nodeSelectorLabel: "svc-lb.tailscale.iptables.sh/deploy"
+
+  # Generate a hostname based on the target service name and target service namespace
+  generateHostnameFromServiceName: false
+  # An optional domain suffix that will be appended to the generated hostname. Only used if
+  # generateHostnameFromServiceName: true
+  serviceDomainSuffix: ""
+
+  # Runtime image to deploy as the
+  runtime:
+    image:
+      repository: clrxbl/tailscale-svc-lb-runtime
+      pullPolicy: IfNotPresent
+      # Overrides the image tag whose default is the chart appVersion.
+      tag: "latest"
+
+    # A list of imagePullSecret names that will be used when fetching the runtime images.
+    imagePullSecrets: []
+    # - exampleSecretName
+    # - anotherSecretName
+
+    resources: {}
+      # We usually recommend not to specify default resources and to leave this as a conscious
+      # choice for the user. This also increases chances charts run on environments with little
+      # resources, such as Minikube. If you do want to specify resources, uncomment the following
+      # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+      # limits:
+      #   cpu: 100m
+      #   memory: 128Mi
+      # requests:
+      #   cpu: 100m
+      #   memory: 128Mi
+
+  leaderElector:
+    image:
+      repository: gcr.io/google_containers/leader-elector
+      pullPolicy: IfNotPresent
+      tag: "0.5"
+
+    imagePullSecrets: []
+    # - exampleSecretName
+    # - anotherSecretName
+
+    resources: {}
+      # We usually recommend not to specify default resources and to leave this as a conscious
+      # choice for the user. This also increases chances charts run on environments with little
+      # resources, such as Minikube. If you do want to specify resources, uncomment the following
+      # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+      # limits:
+      #   cpu: 100m
+      #   memory: 128Mi
+      # requests:
+      #   cpu: 100m
+      #   memory: 128Mi
