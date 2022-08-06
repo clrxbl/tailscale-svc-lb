@@ -7,8 +7,17 @@ Basically does what [Tailscale's k8s examples](https://github.com/tailscale/tail
 
 ## Installation
 
-There's a Helm chart in the chart directory. There's no public Helm repository available (yet).
-It deploys the controller & any svc-lb pods in the namespace where it's installed.
+Add the Helm chart as shown below
+
+```bash
+helm repo add tailscale-svc-lb https://clrxbl.github.io/tailscale-svc-lb/
+helm repo update
+```
+
+Install the controller with
+```bash
+helm install tailscale-svc-lb tailscale-svc-lb/tailscale-svc-lb -n kube-system
+```
 
 Once the controller is deployed, create a LoadBalancer service with the loadBalancerClass set to "svc-lb.tailscale.iptables.sh/lb".
 
@@ -22,7 +31,7 @@ All configuration options are supplied using Environment Variables
 
 | Variable                             | Description                                                                                                                        | Default                                        |
 |--------------------------------------|------------------------------------------------------------------------------------------------------------------------------------|------------------------------------------------|
- | `RESOURCE_PREFIX`                    | Prefix to prepend to the service name when creating proxy resources                                                                | `ts-`                                          |
+| `RESOURCE_PREFIX`                    | Prefix to prepend to the service name when creating proxy resources                                                                | `ts-`                                          |
 | `SECRET_NAME`                        | Name of the secret that the `ts-auth-key` value should be used from                                                                | `tailscale-svc-lb`                             |
 | `LOAD_BALANCER_CLASS`                | LoadBalancerClass that this controller will implement                                                                              | `svc-lb.tailscale.iptables.sh/lb`              |
 | `NODE_SELECTOR_LABEL`                | Label to use when selecting nodes to run Tailscale on. The value of this label should be `true`                                    | None                                           |
