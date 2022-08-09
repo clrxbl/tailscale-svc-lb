@@ -1,8 +1,7 @@
 import logging
-
 import kubernetes
-
 import config
+import contextlib
 
 
 def get_common_labels(service, namespace):

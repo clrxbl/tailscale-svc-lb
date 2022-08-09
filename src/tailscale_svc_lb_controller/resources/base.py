@@ -1,4 +1,4 @@
-import abc
+from abc import abstractmethod
 import contextlib
 import kubernetes
 
