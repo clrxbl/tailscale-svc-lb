@@ -17,6 +17,7 @@ def configure(settings: kopf.OperatorSettings, **_):
     )
     settings.persistence.finalizer = config.CONTROLLER_PREFIX + "/finalizer"
     settings.persistence.progress_storage = kopf.AnnotationsProgressStorage(prefix=config.CONTROLLER_PREFIX)
+    settings.posting.level = logging.ERROR
 
 
 @kopf.on.field("secrets", field="data.ts-ip")
