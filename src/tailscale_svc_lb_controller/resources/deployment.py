@@ -33,8 +33,7 @@ class Deployment(BaseResource):
         deployment = self.new()
         return k8s.create_namespaced_deployment(
             namespace=self.tailscale_proxy_namespace,
-            body=deployment,
-            name=f"{config.RESOURCE_PREFIX}{self.target_service_name}"
+            body=deployment
         )
 
     def delete(self) -> None:

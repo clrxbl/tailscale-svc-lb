@@ -33,8 +33,7 @@ class DaemonSet(BaseResource):
 
         return k8s.create_namespaced_daemon_set(
             namespace=self.tailscale_proxy_namespace,
-            body=daemonset,
-            name=f"{config.RESOURCE_PREFIX}{self.target_service_name}"
+            body=daemonset
         )
 
     def delete(self) -> None:

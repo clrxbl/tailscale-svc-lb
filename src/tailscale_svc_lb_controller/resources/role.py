@@ -44,8 +44,7 @@ class Role(BaseResource):
         k8s = kubernetes.client.RbacAuthorizationV1Api()
         return k8s.create_namespaced_role(
             namespace=self.tailscale_proxy_namespace,
-            body=self.new(),
-            name=f"{config.RESOURCE_PREFIX}{self.target_service_name}"
+            body=self.new()
         )
 
     def delete(self) -> None:
