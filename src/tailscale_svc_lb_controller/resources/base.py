@@ -1,10 +1,9 @@
-from abc import abstractmethod
 import contextlib
 import kubernetes
 
 from src.tailscale_svc_lb_controller import config
 from src.tailscale_svc_lb_controller import helpers
-
+from abc import abstractmethod
 
 class BaseResource:
 
