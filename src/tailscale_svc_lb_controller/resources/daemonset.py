@@ -31,7 +31,7 @@ class DaemonSet(BaseResource):
         k8s = kubernetes.client.AppsV1Api()
         daemonset = self.new()
 
-        return k8s.create_namespaced_daemon_set(
+        return k8s.replace_namespaced_daemon_set(
             namespace=self.tailscale_proxy_namespace,
             body=daemonset
         )

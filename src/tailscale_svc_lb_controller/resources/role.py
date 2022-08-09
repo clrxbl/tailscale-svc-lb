@@ -42,7 +42,7 @@ class Role(BaseResource):
         Creates the Role necessary to run the Tailscale Proxy
         """
         k8s = kubernetes.client.RbacAuthorizationV1Api()
-        return k8s.create_namespaced_role(
+        return k8s.replace_namespaced_role(
             namespace=self.tailscale_proxy_namespace,
             body=self.new()
         )

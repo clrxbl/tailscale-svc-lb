@@ -31,7 +31,7 @@ class Deployment(BaseResource):
         """
         k8s = kubernetes.client.AppsV1Api()
         deployment = self.new()
-        return k8s.create_namespaced_deployment(
+        return k8s.replace_namespaced_deployment(
             namespace=self.tailscale_proxy_namespace,
             body=deployment
         )

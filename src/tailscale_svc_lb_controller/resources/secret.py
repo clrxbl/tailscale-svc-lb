@@ -25,7 +25,7 @@ class Secret(BaseResource):
         Creates the Secret necessary to run the Tailscale Proxy
         """
         k8s = kubernetes.client.CoreV1Api()
-        return k8s.create_namespaced_secret(
+        return k8s.replace_namespaced_secret(
             namespace=self.tailscale_proxy_namespace,
             body=self.new()
         )
