@@ -27,7 +27,8 @@ class Secret(BaseResource):
         k8s = kubernetes.client.CoreV1Api()
         return k8s.replace_namespaced_secret(
             namespace=self.tailscale_proxy_namespace,
-            body=self.new()
+            body=self.new(),
+            name=f"{config.RESOURCE_PREFIX}{self.target_service_name}"
         )
 
     def delete(self) -> None:
