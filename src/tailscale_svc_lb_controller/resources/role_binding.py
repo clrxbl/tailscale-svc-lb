@@ -1,5 +1,3 @@
-import logging
-
 import kubernetes
 
 from src.tailscale_svc_lb_controller import helpers, config
@@ -60,6 +58,6 @@ class RoleBinding(BaseResource):
         k8s = kubernetes.client.RbacAuthorizationV1Api()
         with(helpers.ignore_k8s_statuses(404)):
             return k8s.read_namespaced_role_binding(
-                namespace=self.target_service_namespace,
+                namespace=self.tailscale_proxy_namespace,
                 name=f"{config.RESOURCE_PREFIX}{self.target_service_name}"
             )
