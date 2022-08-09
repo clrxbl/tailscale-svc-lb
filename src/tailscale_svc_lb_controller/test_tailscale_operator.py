@@ -25,7 +25,7 @@ def test_operator():
     rbac_api = client.RbacAuthorizationV1Api()
     app_api = client.AppsV1Api()
 
-    k8s_api.replace_namespaced_secret(operator_config.TS_PROXY_NAMESPACE, kubernetes.client.V1Secret(
+    k8s_api.create_namespaced_secret(operator_config.TS_PROXY_NAMESPACE, kubernetes.client.V1Secret(
         metadata=kubernetes.client.V1ObjectMeta(
             name=operator_config.SECRET_NAME,
             namespace=operator_config.TS_PROXY_NAMESPACE,
@@ -49,10 +49,10 @@ def test_operator():
         try:
             with open(os.path.join(os.path.dirname(__file__), 'examples', 'pod.yaml')) as file:
                 pod = yaml.load(file, Loader=yaml.FullLoader)
-                k8s_api.replace_namespaced_pod(testing_namespace_name, pod)
+                k8s_api.create_namespaced_pod(testing_namespace_name, pod)
             with open(os.path.join(os.path.dirname(__file__), 'examples', 'service.yaml')) as file:
                 service = yaml.load(file, Loader=yaml.FullLoader)
-                k8s_api.replace_namespaced_service(testing_namespace_name, service)
+                k8s_api.create_namespaced_service(testing_namespace_name, service)
 
             # Give it some time to create the tailscale proxy resources
             time.sleep(20)

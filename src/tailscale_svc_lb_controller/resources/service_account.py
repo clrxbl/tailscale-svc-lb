@@ -23,7 +23,7 @@ class ServiceAccount(BaseResource):
         Creates the ServiceAccount necessary to run the Tailscale Proxy
         """
         k8s = kubernetes.client.CoreV1Api()
-        return k8s.replace_namespaced_service_account(
+        return k8s.create_namespaced_service_account(
             namespace=self.tailscale_proxy_namespace,
             body=self.new(),
             name=f"{config.RESOURCE_PREFIX}{self.target_service_name}"
