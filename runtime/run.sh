@@ -47,6 +47,7 @@ else
     if [[ "${CURRENT_LEADER}" == "$(hostname)" ]]; then
       echo "I am the leader."
       break
+    fi
     sleep 1
   done
 fi
