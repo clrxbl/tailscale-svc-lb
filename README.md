@@ -5,6 +5,11 @@ Basically does what [Tailscale's k8s examples](https://github.com/tailscale/tail
 
 [![asciicast](https://asciinema.org/a/smlS1PDekgvJBDuClsz9huMJy.svg)](https://asciinema.org/a/smlS1PDekgvJBDuClsz9huMJy)
 
+## End of Life
+
+As of February 2023, Tailscale has released an alpha version of their own Kubernetes operator.
+This operator still functions perfectly fine (and I personally still use it until Tailscale's version is considered GA) but I will be archiving this repository in favour of the official solution.
+
 ## Installation
 
 Add the Helm chart as shown below
